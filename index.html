@@ -2,7 +2,18 @@
 <html>
 <meta charset="utf-8">
 <body>
-<title>AreWeByteCodeStill</title>
+<h1><title>AreWeByteCodeStill</title></h1>
+<div><p>This dashboard shows the count of <tt>jsbytecode</tt> references
+    that currently exist in SpiderMonkey.</p>
+    <p>The goal since <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1478034">Bug 1478034</a>
+        is to remove all the usages and replace them
+        with usage of the BytecodeInterface added there.
+    </p>
+    <p>If you'd like to help develop this, the github repo is <a href="https://github.com/mgaudet/AreWeBytecodeStill">here</a>, pull requests
+        extremely welcome.
+    </p>
+</div>
+<h2>Bytecode Over Time</h2>
 <div id="tester" style="width:90%;height:250px;"></div>
 <h2> Most Recent results: </h2>
 <div id="summary"></div>

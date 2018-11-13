@@ -11894,7 +11894,7 @@ function create_data() {
         let count = value.results.length;
         let date = new Date(value.date * 1000);
         plot_data.y.push(count);
-        plot_data.x.push(date /*index /*value.date*/);
+        plot_data.x.push(date);
     });
     return plot_data;
 }
