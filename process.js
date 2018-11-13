@@ -1,9 +1,9 @@
 
 // This file will be prepended by JSON data by the script generate_data.sh,
-// and so can freely access a variable "matches".
-
-// Some helpful constructs borrowed from Tom Shuster's CacheIR analyzer
-const $ = document.querySelector.bind(document);
+// and so can freely access a variable data.
+console.log("Loaded script");
+// // Some helpful constructs borrowed from Tom Shuster's CacheIR analyzer
+// const $ = document.querySelector.bind(document);
 
 class DefaultMap extends Map {
     constructor(defaultConstructor, init) {
@@ -19,12 +19,15 @@ class DefaultMap extends Map {
     }
 };
 
-// Some statistics maps.
-let baseDirectoryStats = new DefaultMap(() => 0);
-let filenameStats = new DefaultMap(() => 0);
 
-function create_path_splits() {
-    matches.list.forEach(element => {
+// Parse through and chunk the paths into sensible bits
+// Use them to also fill in some statistic counters.
+function create_path_splits_and_compute_stats(matches) {
+    // Some statistics maps.
+    let baseDirectoryStats = new DefaultMap(() => 0);
+    let filenameStats = new DefaultMap(() => 0);
+
+    matches.results.forEach(element => {
         let halves = element.path.split('js/src/');
         element.shortPath = halves[1];
         let pathremainder = element.shortPath.split('/');
@@ -34,6 +37,8 @@ function create_path_splits() {
         baseDirectoryStats.set(element.baseDir, baseDirectoryStats.get(element.baseDir) + 1);
         filenameStats.set(element.filename, filenameStats.get(element.filename) + 1);
     });
+
+    return {directory: baseDirectoryStats, filename: filenameStats};
 }
 
 function append_two_column_table(target, column1_title, column2_title, map) {
@@ -45,18 +50,57 @@ function append_two_column_table(target, column1_title, column2_title, map) {
     target.appendChild(table);
 }
 
-function update_summary() {
-    var count = matches.list.length;
-    let res = $("#summary");
+function update_summary(matches, stats) {
+    var count = matches.results.length;
+    let res = document.getElementById("summary");
     let p = document.createElement("p");
     let text = document.createTextNode("Found "+count+" results");
     p.appendChild(text);
     res.appendChild(p);
 
-    append_two_column_table(res, "Base Directory", "Count", baseDirectoryStats);
-    append_two_column_table(res, "Filename", "Count", filenameStats);
+    append_two_column_table(res, "Base Directory", "Count", stats.directory);
+    append_two_column_table(res, "Filename", "Count", stats.filename);
 }
 
-create_path_splits();
-update_summary();
+function append_revision_info(revision) {
+    let res = document.getElementById("summary");
+    let p = document.createElement("p");
+    let date = new Date(revision.date * 1000);
+    let text = document.createTextNode(`Most recently analyzed revision ${revision.node} from ${date}`);
+    p.appendChild(text);
+    res.appendChild(p);
+}
+
+function update_most_recent_summary() {
+    // Summrize results for the latest data
+    let most_recent = data[data.length - 1];
+    append_revision_info(most_recent);
+    let stats = create_path_splits_and_compute_stats(most_recent);
+    update_summary(most_recent, stats);
+}
+
+function create_data() {
+    let plot_data = {x: [], y: []};
+    data.forEach((value, index, array) => {
+        let count = value.results.length;
+        let date = new Date(value.date * 1000);
+        plot_data.y.push(count);
+        plot_data.x.push(index /*value.date*/);
+    });
+    return plot_data;
+}
+
+
+
+update_most_recent_summary();
+
+function create_plot() {
+    let data = create_data();
+    console.log(data);
+    let tester = document.getElementById('tester');
+    Plotly.plot(tester, [data], {margin: {t: 0}});
+}
+create_plot();
+
+
 console.log("ran scripts");
